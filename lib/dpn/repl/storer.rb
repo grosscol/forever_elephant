@@ -8,7 +8,7 @@ require 'pairtree'
 module Client
   module Repl
 
-    class Storer
+    class Storer < Action
 
       class DefaultMethod
         RSYNC_OPTIONS = ["-r -k --partial -q --copy-unsafe-links"]
@@ -28,29 +28,30 @@ module Client
 
       Result = Struct.new(:success?, :error)
 
-      def initialize(attempt, store_method = DefaultMethod)
-        @attempt = attempt
-        @store_method = store_method
+
+      def initialize(event_log, method = DefaultMethod)
+        @event_log = event_log
+        @method = method
       end
 
       def store
         result = store_bag
         if result.success?
-          attempt.success!
-          FileUtils.remove_entry_secure attempt.staging_location
-          FileUtils.remove_entry_secure attempt.unpacked_location
+          FileUtils.remove_entry_secure event_log.get(:staging_location)
+          FileUtils.remove_entry_secure event_log.get(:unpacked_location)
+          event(:stored, {})
         else
-          attempt.failure!(result.error)
+          event(:received_notified, {storer: {errors: result.error}})
         end
       end
 
       private
 
-      attr_reader :attempt, :store_method
+      attr_reader :event_log, :method
 
       def store_bag
         begin
-          result = store_method.store(attempt.unpacked_location, attempt.bag)
+          result = method.store(event_log.get(:unpacked_location), event_log.get(:bag))
           Result.new(result.success?, result.error)
         rescue IOError, SystemCallError => e
           Result.new(false, "#{e.message}\n#{e.backtrace}")

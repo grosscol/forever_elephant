@@ -7,6 +7,10 @@
 module Client
   module Repl
 
+
+    # This really represents two states:
+    # 1. null state, i.e. the replication has not been assigned a progress
+    # 2. ready; the flow is in the first state
     class RetrievalFilter
       def flows
         replications

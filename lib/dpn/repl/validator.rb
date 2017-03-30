@@ -6,7 +6,7 @@
 module Client
   module Repl
 
-    class Validator
+    class Validator < Action
 
       class DefaultMethod
         Result = Struct.new(:valid?, :validation_errors)
@@ -18,19 +18,19 @@ module Client
 
       Result = Struct.new(:success?, :bag_valid?, :validation_errors, :error)
 
-      attr_reader :validate_attempt, :validate_method
+      attr_reader :event_log, :method
 
-      def initialize(validate_attempt, validate_method = DefaultMethod)
-        @validate_attempt = validate_attempt
-        @validate_method = validate_method
+      def initialize(event_log, method = DefaultMethod)
+        @event_log = event_log
+        @method = method
       end
 
-      def validate
-        result = validate_bag(validate_attempt.unpacked_location)
+      def execute
+        result = validate_bag(event_log.get(:unpacked_location))
         if result.success?
-          validate_attempt.success!(result.bag_valid?, result.validation_errors)
+          event(:validated, {bag_valid: result.bag_valid?, validation_errors: result.validation_errors})
         else
-          validate_attempt.failure!(result.error)
+          event(:unpacked, {validator: {errors: result.error}} )
         end
       end
 
@@ -38,7 +38,7 @@ module Client
 
       def validate_bag(bag_location)
         begin
-          result = validate_method.validate_bag(bag_location)
+          result = method.validate_bag(bag_location)
           Result.new(true, result.valid?, result.validation_errors, nil)
         rescue RuntimeError, IOError, SystemCallError => e
           Result.new(false, nil, nil, "#{e.message}\n#{e.backtrace}")

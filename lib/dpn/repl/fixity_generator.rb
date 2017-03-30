@@ -6,7 +6,7 @@
 module Client
   module Repl
 
-    class FixityGenerator
+    class FixityGenerator < Action
 
       class DefaultMethod
         def self.sha256(location)
@@ -16,19 +16,14 @@ module Client
 
       Result = Struct.new(:success?, :value, :error)
 
-      attr_reader :fixity_attempt, :fixity_method
 
-      def initialize(fixity_attempt, fixity_method = DefaultMethod)
-        @fixity_attempt = fixity_attempt
-        @fixity_method = fixity_method
-      end
 
-      def generate
-        result = fixity(fixity_attempt.unpacked_location)
+      def execute
+        result = fixity(event_log.get(:unpacked_location))
         if result.success?
-          fixity_attempt.success!(result.value)
+          event(:fixity_complete, {fixity_value: result.value})
         else
-          fixity_attempt.failure!(result.error)
+          event(:validated, {fixity_generator: {errors: result.error}})
         end
       end
 
@@ -36,7 +31,7 @@ module Client
 
       def fixity(bag_location)
         begin
-          Result.new(true, fixity_method.sha256(bag_location), nil)
+          Result.new(true, method.sha256(bag_location), nil)
         rescue RuntimeError, IOError, SystemCallError => e
           Result.new(false, nil, "#{e.message}\n#{e.backtrace}")
         end
