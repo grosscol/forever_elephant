@@ -1,16 +1,16 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'dpn/repl/version'
+require 'forever_elephant/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "dpn-repl"
-  spec.version       = Dpn::Repl::VERSION
+  spec.name          = "forever_elephant"
+  spec.version       = ForeverElephant::VERSION
   spec.authors       = ["Bryan Hockey"]
   spec.email         = ["bhock@umich.edu"]
 
-  spec.summary       = %q{dpn-repl}
-  spec.description   = %q{dpn-repl}
+  spec.summary       = %q{HathiTrust tooling for DPN, intended for wider usage.}
+  spec.description   = %q{HathiTrust tooling for DPN, intended for wider usage.}
   spec.homepage      = "https://dpn.org"
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
@@ -19,9 +19,6 @@ Gem::Specification.new do |spec|
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
-
-  spec.add_dependency "veto"
-  spec.add_dependency "activerecord"
 
   spec.add_development_dependency "bundler", "~> 1.13"
   spec.add_development_dependency "rake", "~> 10.0"
