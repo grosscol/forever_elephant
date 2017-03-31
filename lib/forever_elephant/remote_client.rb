@@ -3,7 +3,7 @@
 # Licensed according to the terms of the Revised BSD License
 # See LICENSE.md for details.
 
-module Client
+module ForeverElephant
 
   # A client connection to a remote node.
   class RemoteClient
@@ -16,7 +16,6 @@ module Client
       @node = node
       @logger = logger
     end
-
 
     # Execute the given query.
     # @param [Query] query A Query instance.
@@ -40,9 +39,7 @@ module Client
         c.logger = logger
       end
     end
-
-
   end
-end
 
+end
 

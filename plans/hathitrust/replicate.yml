@@ -1,0 +1,12 @@
+init:               ForeverElephant::Hathitrust::BeginReplications
+ready:              ForeverElephant::Hathitrust::Retrieve
+retrieved:          ForeverElephant::Hathitrust::Unpack
+unpacked:           ForeverElephant::Hathitrust::Validate
+validated:          ForeverElephant::Hathitrust::GenerateFixity
+fixity_generated:   ForeverElephant::Hathitrust::ReceivedNotify
+received_notified:  ForeverElephant::Hathitrust::DetectStoreRequest
+store_requested:    ForeverElephant::Hathitrust::Store
+stored:             ForeverElephant::Hathitrust::StoredNotify
+stored_notified:    RegalBird::Action::Clean
+cancelled:          RegalBird::Action::Clean
+

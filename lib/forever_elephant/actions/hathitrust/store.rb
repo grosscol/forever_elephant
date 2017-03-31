@@ -3,12 +3,13 @@
 # Licensed according to the terms of the Revised BSD License
 # See LICENSE.md for details.
 
+require "regal_bird"
 require 'pairtree'
 
-module Client
-  module Repl
+module ForeverElephant
+  module Hathitrust
 
-    class Storer < Action
+    class Store < RegalBird::Action
 
       class DefaultMethod
         RSYNC_OPTIONS = ["-r -k --partial -q --copy-unsafe-links"]
@@ -34,14 +35,16 @@ module Client
         @method = method
       end
 
-      def store
-        result = store_bag
-        if result.success?
-          FileUtils.remove_entry_secure event_log.get(:staging_location)
-          FileUtils.remove_entry_secure event_log.get(:unpacked_location)
-          event(:stored, {})
-        else
-          event(:received_notified, {storer: {errors: result.error}})
+      def better
+        wrap_executation do
+          unpacked_location = Pathname.new event_log.get(:unpacked_location)
+          uuid = event_log.get(:bag)
+          result = safe_store { method.store(unpacked_location, bag) }
+          if result.success?
+            FileUtils.remove_entry_secure event_log.get(:staging_location)
+            FileUtils.remove_entry_secure event_log.get(:unpacked_location)
+          end
+          result
         end
       end
 
@@ -49,14 +52,15 @@ module Client
 
       attr_reader :event_log, :method
 
-      def store_bag
+      def safe_store(&block)
         begin
-          result = method.store(event_log.get(:unpacked_location), event_log.get(:bag))
-          Result.new(result.success?, result.error)
+          block.call
+          RegalBird::ActionSuccess.new(:stored, {})
         rescue IOError, SystemCallError => e
-          Result.new(false, "#{e.message}\n#{e.backtrace}")
+          RegalBird::ActionFailure.new("#{e.message}\n#{e.backtrace}")
         end
       end
+
     end
 
   end
